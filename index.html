@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UrbanGo | Bike Mobility Analytics</title>
+<link rel="stylesheet" href="./style.css">
+
+<meta name="theme-color" content="#172b55">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="UrbanPulse">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <section class="login-card" aria-labelledby="loginTitle">
+    <div class="login-brand">
+      <div class="logo">↗</div>
+      <div><h1 style="font-size:20px;margin:0">UrbanGo</h1>
+        <p style="margin:2px 0 0;color:var(--muted);font-size:12px">Mobility analytics</p></div>
+    </div>
+    <h2 id="loginTitle">Welcome back</h2>
+    <p class="login-copy">Sign in to explore your bike-share dashboard.</p>
+    <form id="loginForm">
+      <div class="login-field">
+        <label for="loginEmail">Email address</label>
+        <input id="loginEmail" name="email" type="email" autocomplete="username" placeholder="you@example.com" required>
+      </div>
+      <div class="login-field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required>
+      </div>
+      <button class="login-submit" type="submit">Sign in to dashboard</button>
+      <p class="login-error" id="loginError" role="alert"></p>
+    </form>
+    <p class="login-note"><strong>Demo login:</strong> this front-end sample checks the form only. It does not verify an account or securely protect data. Add a real authentication service before using it with private information.</p>
+  </section>
+</div>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">↗</div><div><h1>UrbanGo</h1><p>Urban mobility · Demand intelligence</p></div></div>
+    <div class="top-actions"><span class="status">● LIVE INTERACTIVE DEMO</span><button class="btn" id="resetBtn">Reset filters</button>
+      <button class="btn primary" id="exportBtn">Export filtered CSV ↓</button></div>
+  </header>
+  <section class="hero">
+    <div><div class="eyebrow">Executive takeaway · Mobility analytics</div>
+    <h2 id="headline">Demand concentrates around commute hours, with weekends shifting toward leisure trips.</h2>
+    <p id="summary">Explore how weather, time of day and day type relate to bike-share demand. Use the dropdowns to filter every chart and KPI together.</p></div>
+    <div class="hero-stat"><small>Filtered trips in view</small><div class="big" id="heroTrips">—</div>
+    <small id="heroSub">Across the selected period</small>
+    <div class="delta" id="heroDelta">↓ Interactive insight updates with filters</div></div>
+  </section>
+  <section class="filters" aria-label="Dashboard filters">
+    <div class="field"><label for="seasonFilter">Season</label><select id="seasonFilter"><option value="All">All seasons</option>
+      <option>Spring</option><option>Summer</option><option>Autumn</option><option>Winter</option></select></div>
+    <div class="field"><label for="dayFilter">Day type</label><select id="dayFilter"><option value="All">All days</option>
+      <option>Weekday</option><option>Weekend</option></select></div>
+    <div class="field"><label for="weatherFilter">Weather</label><select id="weatherFilter"><option value="All">All conditions</option>
+      <option>Clear</option><option>Cloudy</option><option>Rain</option></select></div>
+    <div class="field"><label for="metricFilter">Chart metric</label><select id="metricFilter"><option value="trips">Trip count</option>
+      <option value="duration">Average trip duration</option><option value="casual">Casual riders</option></select></div>
+    <div><button class="btn primary" id="applyBtn" style="width:100%">Apply filters</button>
+      <div class="filter-note">Changes refresh charts automatically.</div></div>
+  </section>
+  <section class="kpis">
+    <div class="kpi" style="--tint:#eaf0ff"><span class="icon">🚲</span><div class="label">Total trips</div>
+    <div class="value" id="kpiTrips">—</div><div class="sub" id="kpiTripsSub">Selected records</div></div>
+    <div class="kpi" style="--tint:#e2faf4"><span class="icon">⏱</span><div class="label">Avg. trip duration</div>
+    <div class="value" id="kpiDuration">—</div><div class="sub">Minutes per trip</div></div>
+    <div class="kpi" style="--tint:#fff1df"><span class="icon">☀</span><div class="label">Best demand hour</div>
+    <div class="value" id="kpiHour">—</div><div class="sub" id="kpiHourSub">Peak across selected data</div></div>
+    <div class="kpi" style="--tint:#f0eaff"><span class="icon">🌦</span><div class="label">Most common weather</div>
+    <div class="value" id="kpiWeather">—</div><div class="sub" id="kpiWeatherSub">By trip volume</div></div>
+  </section>
+  <section class="grid">
+    <article class="panel"><div class="panel-head"><div><h3>1. Demand by hour</h3><p class="desc">Spot peak commute and leisure windows</p></div>
+      <span class="tag">TIME PATTERN</span></div><div class="chart-wrap"><canvas id="hourChart"></canvas></div><div class="insight" id="hourInsight"></div></article>
+    <article class="panel"><div class="panel-head"><div><h3>2. Demand by season</h3><p class="desc">Compare volume across the year</p></div>
+      <span class="tag">SEASONALITY</span></div><div class="chart-wrap"><canvas id="seasonChart"></canvas></div><div class="insight" id="seasonInsight"></div></article>
+    <article class="panel"><div class="panel-head"><div><h3>3. Weather vs. demand</h3>
+      <p class="desc">Understand how conditions relate to usage</p></div><span class="tag">CONDITIONS</span></div>
+      <div class="chart-wrap"><canvas id="weatherChart"></canvas></div>
+      <div class="legend"><span><i class="dot" style="background:#3768f5"></i>Trip count</span>
+        <span><i class="dot" style="background:#13b8a6"></i>Casual riders</span></div>
+        <div class="insight" id="weatherInsight"></div></article>
+    <article class="panel"><div class="panel-head"><div><h3>4. Rider mix</h3><p class="desc">Registered vs. casual rider share</p></div>
+      <span class="tag">CUSTOMERS</span></div><div class="chart-wrap"><canvas id="riderChart"></canvas></div>
+      <div class="legend"><span><i class="dot" style="background:#3768f5"></i>Registered</span>
+        <span><i class="dot" style="background:#13b8a6"></i>Casual</span></div><div class="insight" id="riderInsight"></div></article>
+  </section>
+  <section class="bottom-grid">
+    <article class="panel"><div class="panel-head"><div><h3>Demand snapshot</h3>
+      <p class="desc">Top season/day combinations in the current selection</p></div>
+      <span class="tag">DETAIL</span></div><div class="table-scroll"><table><thead><tr><th>Season</th><th>Day type</th><th>Weather</th><th>Trips</th><th>Avg. duration</th></tr></thead><tbody id="snapshotBody"></tbody></table></div></article>
+    <article class="panel"><div class="panel-head"><div><h3>Use your own dataset</h3>
+      <p class="desc">Upload a CSV to replace the sample records</p></div>
+      <span class="tag">DATA INPUT</span></div><div class="upload-area"><strong>Upload bike trip CSV</strong>
+        <p>Required columns: season, day_type, weather, hour, trips, casual, registered, duration</p>
+        <input type="file" id="csvFile" accept=".csv,text/csv"><p id="uploadStatus">Demo data is generated locally for this prototype.</p>
+        <button class="btn" id="sampleBtn">Reload sample data</button></div>
+        <div class="insight"><b>Portfolio note:</b> This is a demo dataset generated for this dashboard, not real-world operational data. Replace it with an open bike-share dataset before presenting findings as factual.</div></article>
+  </section>
+  <footer class="footer"><span>UrbanPulse · Built with HTML, CSS and vanilla JavaScript</span><span>Local-first demo · No account or server required</span></footer>
+</div>
+
+<script src="./script.js"></script>
+<script>
+(function () {
+  const form = document.getElementById('loginForm');
+  const screen = document.getElementById('loginScreen');
+  const error = document.getElementById('loginError');
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      error.textContent = 'Enter a valid email address.';
+      return;
+    }
+    if (password.length < 6) {
+      error.textContent = 'Password must contain at least 6 characters.';
+      return;
+    }
+    error.textContent = '';
+    screen.hidden = true;
+    sessionStorage.setItem('urbanGo_demo_signed_in', 'yes');
+  });
+  if (sessionStorage.getItem('urbanGo_demo_signed_in') === 'yes') {
+    screen.hidden = true;
+  }
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./service-worker.js').catch(function (err) {
+        console.warn('Service worker registration failed:', err);
+      });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
